@@ -129,7 +129,7 @@ def main():
                 print("outputfilenames:")
                 for i in range(0, outputs.size(1)):
                     output = tensor2img(outputs[:, i, :, :, :])
-                    filename = os.path.basename(input_paths[i])
+                    filename = str(output_no)
                     if args.is_save_as_png:
                         file_extension = os.path.splitext(filename)[1]
                         filename = filename.replace(file_extension, '.png')
