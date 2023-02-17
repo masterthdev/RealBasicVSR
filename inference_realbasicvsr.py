@@ -127,15 +127,14 @@ def main():
                 
                 mmcv.mkdir_or_exist(args.output_dir)
                 print("outputfilenames:")
-                for i in range(0, outputs.size(1)):
-                    output = tensor2img(outputs[:, i, :, :, :])
-                    filename = str(output_no)
-                    if args.is_save_as_png:
-                        file_extension = os.path.splitext(filename)[1]
-                        filename = filename.replace(file_extension, '.png')
-                        print("save_as_png")
-                    mmcv.imwrite(output, f'{args.output_dir}/{filename}')
-                    print("write image" + filename)
+                output = tensor2img(outputs[:, 0, :, :, :])
+                filename = str(output_no)
+                if args.is_save_as_png:
+                    file_extension = os.path.splitext(filename)[1]
+                    filename = filename.replace(file_extension, '.png')
+                    print("save_as_png")
+                mmcv.imwrite(output, f'{args.output_dir}/{filename}')
+                print("write image" + filename)
 
                 print(output_no)
                 output_no += 1
