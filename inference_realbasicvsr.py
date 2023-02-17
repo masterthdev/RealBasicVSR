@@ -113,11 +113,15 @@ def main():
     with torch.no_grad():
         if isinstance(args.max_seq_len, int):
             outputs = []
+            output_no = 0
+            print("max_seq_len")
             for i in range(0, inputs.size(1), args.max_seq_len):
                 imgs = inputs[:, i:i + args.max_seq_len, :, :, :]
                 if cuda_flag:
                     imgs = imgs.cuda()
                 outputs.append(model(imgs, test_mode=True)['output'].cpu())
+                print(output_no)
+                output_no += 1
             outputs = torch.cat(outputs, dim=1)
         else:
             if cuda_flag:
