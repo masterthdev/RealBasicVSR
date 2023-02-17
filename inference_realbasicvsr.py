@@ -123,10 +123,13 @@ def main():
                 print(output_no)
                 output_no += 1
             outputs = torch.cat(outputs, dim=1)
+            print("outputs1")
         else:
             if cuda_flag:
                 inputs = inputs.cuda()
+                print("inputs.cuda")
             outputs = model(inputs, test_mode=True)['output'].cpu()
+            print("outputs2")
 
     if os.path.splitext(args.output_dir)[1] in VIDEO_EXTENSIONS:
         output_dir = os.path.dirname(args.output_dir)
@@ -139,6 +142,7 @@ def main():
         for i in range(0, outputs.size(1)):
             img = tensor2img(outputs[:, i, :, :, :])
             video_writer.write(img.astype(np.uint8))
+            print("save_as_video")
         cv2.destroyAllWindows()
         video_writer.release()
     else:
