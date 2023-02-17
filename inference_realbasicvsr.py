@@ -112,51 +112,39 @@ def main():
 
     with torch.no_grad():
         if isinstance(args.max_seq_len, int):
-            outputs = []
             output_no = 0
             print("max_seq_len")
             for i in range(0, inputs.size(1), args.max_seq_len):
+                outputs = []
                 imgs = inputs[:, i:i + args.max_seq_len, :, :, :]
                 if cuda_flag:
                     imgs = imgs.cuda()
                 outputs.append(model(imgs, test_mode=True)['output'].cpu())
+                model(imgs, test_mode=True)['output'].cpu()
+                
+                outputs = torch.cat(outputs, dim=1)
+                print("outputs1")
+                
+                mmcv.mkdir_or_exist(args.output_dir)
+                print("outputfilenames:")
+                for i in range(0, outputs.size(1)):
+                    output = tensor2img(outputs[:, i, :, :, :])
+                    filename = os.path.basename(input_paths[i])
+                    if args.is_save_as_png:
+                        file_extension = os.path.splitext(filename)[1]
+                        filename = filename.replace(file_extension, '.png')
+                        print("save_as_png")
+                    mmcv.imwrite(output, f'{args.output_dir}/{filename}')
+                    print("write image" + filename)
+
                 print(output_no)
                 output_no += 1
-            outputs = torch.cat(outputs, dim=1)
-            print("outputs1")
         else:
             if cuda_flag:
                 inputs = inputs.cuda()
                 print("inputs.cuda")
             outputs = model(inputs, test_mode=True)['output'].cpu()
             print("outputs2")
-
-    if os.path.splitext(args.output_dir)[1] in VIDEO_EXTENSIONS:
-        output_dir = os.path.dirname(args.output_dir)
-        mmcv.mkdir_or_exist(output_dir)
-
-        h, w = outputs.shape[-2:]
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        video_writer = cv2.VideoWriter(args.output_dir, fourcc, args.fps,
-                                       (w, h))
-        for i in range(0, outputs.size(1)):
-            img = tensor2img(outputs[:, i, :, :, :])
-            video_writer.write(img.astype(np.uint8))
-            print("save_as_video")
-        cv2.destroyAllWindows()
-        video_writer.release()
-    else:
-        mmcv.mkdir_or_exist(args.output_dir)
-        print("outputfilenames:")
-        for i in range(0, outputs.size(1)):
-            output = tensor2img(outputs[:, i, :, :, :])
-            filename = os.path.basename(input_paths[i])
-            if args.is_save_as_png:
-                file_extension = os.path.splitext(filename)[1]
-                filename = filename.replace(file_extension, '.png')
-                print("save_as_png")
-            mmcv.imwrite(output, f'{args.output_dir}/{filename}')
-            print("write image" + filename)
 
 
 if __name__ == '__main__':
