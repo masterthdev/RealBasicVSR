@@ -74,20 +74,27 @@ def main():
 
     # initialize the model
     model = init_model(args.config, args.checkpoint)
-
+    print("model_loaded")
     # read images
     file_extension = os.path.splitext(args.input_dir)[1]
     if file_extension in VIDEO_EXTENSIONS:  # input is a video file
         video_reader = mmcv.VideoReader(args.input_dir)
         inputs = []
+        print("video_reader ready, input frame:")
+        frame_number = 0
         for frame in video_reader:
             inputs.append(np.flip(frame, axis=2))
+            print(frame_number)
+            frame_number += 1
     elif file_extension == '':  # input is a directory
         inputs = []
         input_paths = sorted(glob.glob(f'{args.input_dir}/*'))
         for input_path in input_paths:
             img = mmcv.imread(input_path, channel_order='rgb')
+            print("imagereader ready, input frame:")
             inputs.append(img)
+            print(frame_number)
+            frame_number += 1
     else:
         raise ValueError('"input_dir" can only be a video or a directory.')
 
@@ -100,6 +107,7 @@ def main():
     cuda_flag = False
     if torch.cuda.is_available():
         model = model.cuda()
+        print("cuda init")
         cuda_flag = True
 
     with torch.no_grad():
@@ -131,13 +139,16 @@ def main():
         video_writer.release()
     else:
         mmcv.mkdir_or_exist(args.output_dir)
+        print("outputfilenames:")
         for i in range(0, outputs.size(1)):
             output = tensor2img(outputs[:, i, :, :, :])
             filename = os.path.basename(input_paths[i])
             if args.is_save_as_png:
                 file_extension = os.path.splitext(filename)[1]
                 filename = filename.replace(file_extension, '.png')
+                print("save_as_png")
             mmcv.imwrite(output, f'{args.output_dir}/{filename}')
+            print("write image" + filename)
 
 
 if __name__ == '__main__':
